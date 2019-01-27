@@ -14,31 +14,41 @@ height=$(tput lines)
 echo "window width: $width"
 echo "window height: $height"
 
-# generates one line of characters.
+# generates one line of characters. expects a number argument for string length
 generate_string() {
-  diversity=$1
-  if [ -z "$diversity" ]; then
-    diversity=7 # not sure this is right . . .
-  fi
+  length=$1 
+  diversity=19
+  output=''
 
   chars=($(cat characters))
-  for ((i=1; i<=$width; i++)); do
+  for ((i=1; i<=$length; i++)); do
     x=$(expr $RANDOM % $diversity)
-    printf "${chars[$x]}"
+    output+="${chars[$x]}"
+  done
+  echo $output
+}
+
+# writes a string onto the screen. Expects a string input
+draw() {
+  input=$1
+  for i in $(seq 0 ${#input}); do
+      tput cup $i $((width/2))
+      printf "${input:$i:1}"
+      sleep 0.2
   done
 }
 
 # the main loop of the script.
 main_loop() {
-  for i in $(seq 1 $height); do
-    echo $green$(generate_string 19)
-  done
+  x=$(generate_string 10)
+  draw $x
 }
 
 ## MAIN EXECUTION ##
 
 clear # diff btw clear and tput clear?
 tput cup 0 0
-tput bold
-
+#tput bold
 main_loop
+
+tput cup $height 0
