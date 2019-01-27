@@ -3,6 +3,14 @@
 # take control of a terminal window and draw something
 
 
+
+########
+# CONFIG
+########
+rain_length=10 # how long the strings get before they fade
+char_count=19  # number of distinct characters to use
+
+
 # COLORS
 reset=\u001b[0m #resets color to normal
 red="\033[0;31m"
@@ -14,10 +22,12 @@ height=$(tput lines)
 echo "window width: $width"
 echo "window height: $height"
 
-# generates one line of characters. expects a number argument for string length
+# generates one line of characters. 
+# $1 - number for string length
+# $2 - number of distict characters to use
 generate_string() {
   length=$1 
-  diversity=19
+  diversity=$2
   output=''
 
   chars=($(cat characters))
@@ -40,7 +50,7 @@ draw() {
 
 # the main loop of the script.
 main_loop() {
-  x=$(generate_string 10)
+  x=$(generate_string $rain_length $char_count)
   draw $x
 }
 
