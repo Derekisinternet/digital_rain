@@ -8,6 +8,7 @@
 ########
 rain_length=10 # how long the strings get before they fade
 char_count=19  # number of distinct characters to use
+cursor_indexes=() # keeps track of the state of each column
 
 # COLORS
 reset=\u001b[0m #resets color to normal
@@ -48,23 +49,28 @@ draw() {
   column=$2
 
   if [ -z $column ]; then
+    printf "Setting to default"
     column=$((width/2))
   fi
 
   for i in $(seq 0 ${#input}); do
       tput cup $i $column
       sleep 0.2
+      tput bold
       printf "${input:$i:1}"
   done
 }
 
 # the main loop of the script.
 main_loop() {
+    
+  for i in $(seq 0 $((#width-1))); do
+    cursor_indexes[$i]=0
+  done
+
   clear # diff btw clear and tput clear?
-  tput cup 0 0
-  tput bold
   x=$(generate_string $rain_length $char_count)
-  draw $x 30
+  draw $x $(($RANDOM%$width))
 }
 
 ####################
