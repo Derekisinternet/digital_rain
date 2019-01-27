@@ -1,26 +1,28 @@
 #!/bin/sh
 
-# take control of a terminal window and draw something
-
-
+# Draws the digital rain from the Matrix franchise using 
+# shell utilities
 
 ########
-# CONFIG
+# CONFIG:
 ########
 rain_length=10 # how long the strings get before they fade
 char_count=19  # number of distinct characters to use
-
 
 # COLORS
 reset=\u001b[0m #resets color to normal
 red="\033[0;31m"
 blue="\033[0;34m"
 green="\033[0;32m"
+bold="\e[1m"
 # WINDOW SIZE
 width=$(tput cols)
 height=$(tput lines)
-echo "window width: $width"
-echo "window height: $height"
+
+
+###########
+## METHODS:
+###########
 
 # generates one line of characters. 
 # $1 - number for string length
@@ -38,27 +40,39 @@ generate_string() {
   echo $output
 }
 
-# writes a string onto the screen. Expects a string input
+# writes a string onto the screen. 
+# $1 - string to draw on screen
+# $2 - integer for which column to draw down
 draw() {
   input=$1
+  column=$2
+
+  if [ -z $column ]; then
+    column=$((width/2))
+  fi
+
   for i in $(seq 0 ${#input}); do
-      tput cup $i $((width/2))
-      printf "${input:$i:1}"
+      tput cup $i $column
       sleep 0.2
+      printf "${input:$i:1}"
   done
 }
 
 # the main loop of the script.
 main_loop() {
+  clear # diff btw clear and tput clear?
+  tput cup 0 0
+  tput bold
   x=$(generate_string $rain_length $char_count)
-  draw $x
+  draw $x 30
 }
 
+####################
 ## MAIN EXECUTION ##
+####################
 
-clear # diff btw clear and tput clear?
-tput cup 0 0
-#tput bold
 main_loop
 
+# put cursor back in a convenient place
+tput sgr0
 tput cup $height 0
