@@ -7,8 +7,9 @@
 # CONFIG:
 ########
 rain_length=10 # how long the strings get before they fade
-char_count=19  # number of distinct characters to use
-cursor_indexes=() # keeps track of the state of each column
+char_count=21  # number of distinct characters to use
+raindrop_indexes=() # keeps track of the state of each column
+chars=($(cat characters)) # list of symbols to display
 
 # COLORS
 reset=\u001b[0m #resets color to normal
@@ -25,18 +26,20 @@ height=$(tput lines)
 ## METHODS:
 ###########
 
+# returns a random character
+generate_char() {
+  i=$((RANDOM%${#chars[@]}))
+  echo "${chars[$i]}"
+}
+
 # generates one line of characters. 
-# $1 - number for string length
-# $2 - number of distict characters to use
+# $1 - number for string lengt
 generate_string() {
-  length=$1 
-  diversity=$2
+  length=$1
   output=''
 
-  chars=($(cat characters))
   for ((i=1; i<=$length; i++)); do
-    x=$(expr $RANDOM % $diversity)
-    output+="${chars[$x]}"
+    output+=$(generate_char)
   done
   echo $output
 }
@@ -61,13 +64,25 @@ draw() {
   done
 }
 
+# find a column that is not running and starts it
+# start_drip() {
+#   i=$((RANDOM%width))
+#   if [ co]
+# }
+
+# iterate_drips(){
+
+# }
+
+# set the environment and  whatnot.
+init(){
+  for i in $(seq 0 $((width-1))); do
+    raindrop_indexes[$i]=0
+  done
+}
+
 # the main loop of the script.
 main_loop() {
-    
-  for i in $(seq 0 $((#width-1))); do
-    cursor_indexes[$i]=0
-  done
-
   clear # diff btw clear and tput clear?
   x=$(generate_string $rain_length $char_count)
   draw $x $(($RANDOM%$width))
@@ -77,6 +92,7 @@ main_loop() {
 ## MAIN EXECUTION ##
 ####################
 
+init
 main_loop
 
 # put cursor back in a convenient place
