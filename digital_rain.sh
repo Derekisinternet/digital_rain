@@ -29,46 +29,34 @@ height=$(tput lines)
 # returns a random character
 generate_char() {
   i=$((RANDOM%${#chars[@]}))
-  echo "${chars[$i]}"
+  echo "$green${chars[$i]}"
 }
 
-# generates one line of characters. 
-# $1 - number for string lengt
-generate_string() {
-  length=$1
-  output=''
-
-  for ((i=1; i<=$length; i++)); do
-    output+=$(generate_char)
-  done
-  echo $output
-}
-
-# writes a string onto the screen. 
-# $1 - string to draw on screen
-# $2 - integer for which column to draw down
-draw() {
-  input=$1
-  column=$2
-
-  if [ -z $column ]; then
-    printf "Setting to default"
-    column=$((width/2))
-  fi
-
-  for i in $(seq 0 ${#input}); do
-      tput cup $i $column
-      sleep 0.2
-      tput bold
-      printf "${input:$i:1}"
-  done
+# draw a character at a specified location
+# $1 - row
+# $2 - column
+draw_char() {
+  tput cup 0 0; echo " drawing"
+  r=$1
+  c=$2
+  if [ -z $r ]; then r=0; fi
+  if [ -z $c ]; then c=0; fi
+  tput cup $r $c
+  char=$(generate_char)
+  printf $char
 }
 
 # find a column that is not running and starts it
-# start_drip() {
-#   i=$((RANDOM%width))
-#   if [ co]
-# }
+start_drip() {
+  i=$((RANDOM%width))
+  # find a random column with a zero
+  while [ ${raindrop_indexes[$i]} -ne 0 ];  do
+    i=$((RANDOM%width))
+  done
+  # draw and iterate
+  draw_char 0 $i
+  raindrop_indexes[$i]=1
+}
 
 # iterate_drips(){
 
@@ -76,6 +64,9 @@ draw() {
 
 # set the environment and  whatnot.
 init(){
+  if [ -z $height ]; then return -1; fi
+  if [ -z $width ]; then return -1; fi
+  clear
   for i in $(seq 0 $((width-1))); do
     raindrop_indexes[$i]=0
   done
@@ -84,8 +75,13 @@ init(){
 # the main loop of the script.
 main_loop() {
   clear # diff btw clear and tput clear?
-  x=$(generate_string $rain_length $char_count)
-  draw $x $(($RANDOM%$width))
+  # x=$(generate_string $rain_length $char_count)
+  # draw $x $(($RANDOM%$width))
+  while : 
+  do
+    start_drip
+    sleep 0.5
+  done
 }
 
 ####################
