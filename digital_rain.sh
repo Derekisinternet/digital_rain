@@ -36,12 +36,12 @@ generate_char() {
 # $1 - row
 # $2 - column
 draw_char() {
-  tput cup 0 0; echo " drawing"
   r=$1
   c=$2
   if [ -z $r ]; then r=0; fi
   if [ -z $c ]; then c=0; fi
   tput cup $r $c
+  tput bold
   char=$(generate_char)
   printf $char
 }
@@ -50,7 +50,7 @@ draw_char() {
 start_drip() {
   i=$((RANDOM%width))
   # find a random column with a zero
-  while [ ${raindrop_indexes[$i]} -ne 0 ];  do
+  while [[ "${raindrop_indexes[$i]}" -ne 0 ]];  do
     i=$((RANDOM%width))
   done
   # draw and iterate
@@ -58,9 +58,30 @@ start_drip() {
   raindrop_indexes[$i]=1
 }
 
-# iterate_drips(){
+# iterate through all the columns that have drops and iterate
+iterate_drops(){
+  for i in $( seq 0 $((width-1)) ); do
+    curr_row="${raindrop_indexes[$i]}"
+    if [[ $curr_row -gt 0 ]]; then
+      draw_char $curr_row $i
+      fade $curr_row $i
+      new_row=$(($curr_row+1))
+      raindrop_indexes[$i]=$new_row
+    fi
+  done
+}
 
-# }
+# make characters in
+fade() {
+  row=$1
+  col=$2
+}
+
+# clean up the terminal on exit
+key_trap() {
+  tput cup $height 0
+  exit 0
+}
 
 # set the environment and  whatnot.
 init(){
@@ -70,6 +91,7 @@ init(){
   for i in $(seq 0 $((width-1))); do
     raindrop_indexes[$i]=0
   done
+  trap "key_trap" 2
 }
 
 # the main loop of the script.
@@ -80,7 +102,8 @@ main_loop() {
   while : 
   do
     start_drip
-    sleep 0.5
+    iterate_drops
+    sleep 0.2
   done
 }
 
