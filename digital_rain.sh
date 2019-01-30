@@ -6,7 +6,7 @@
 ########
 # CONFIG:
 ########
-rain_length=10 # how long the strings get before they fade
+RAIN_LENGTH=10 # how long the strings get before they fade
 char_count=21  # number of distinct characters to use
 raindrop_indexes=() # keeps track of the state of each column
 chars=($(cat characters)) # list of symbols to display
@@ -70,6 +70,21 @@ start_drip() {
   raindrop_indexes[$i]=1
 }
 
+# make characters behind lead character dimmer
+# $1 - row
+# $2 - column
+# $3 - length of the fade
+fade() {
+  row=$1
+  col=$2
+  length=$3
+
+  if [[ $((col-legth)) -gt 0 ]]; then
+    tput cup $row $column
+    printf ' '
+  fi
+}
+
 # iterate through all the columns that have drops and iterate
 iterate_drops(){
   # # starting work on iterating drops in random columns
@@ -86,31 +101,12 @@ iterate_drops(){
         raindrop_indexes[$i]=0
       else
         draw_char $curr_row $i
-        fade $curr_row $i
+        fade $curr_row $i $RAIN_LENGTH
         new_row=$(($curr_row+1))
         raindrop_indexes[$i]=$new_row
       fi
     fi
   done
-}
-
-# make characters behind lead character dimmer
-# $1 - row
-# $2 - column
-# $3 - length of the fade
-fade() {
-  row=$1
-  col=$2
-  length=$3
-
-  tput cup $row $column
-
-  while [[ $length -ne 0 ]]; do
-    length=$((length-1))
-    row=$((row-1))
-    tput cup $row $column
-  done
-
 }
 
 # clean up the terminal on exit
