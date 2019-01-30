@@ -31,7 +31,7 @@ height=$(tput lines)
 # returns a random character
 generate_char() {
   i=$((RANDOM%${#chars[@]}))
-  echo "$chars[$i]"
+  echo ${chars[$i]}
 }
 
 # draw a character at a specified location
