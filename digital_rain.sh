@@ -45,8 +45,10 @@ draw_char() {
   intensity=$4
   if [ -z $r ]; then r=0; fi
   if [ -z $c ]; then c=0; fi
-  if [[ "$4" != "bold" && "$intensity" != "dim" ]]; then 
+  if [[ "$itensity" != "bold" && "$intensity" != "dim" ]]; then 
     intensity=$(tput sgr0)
+  else
+    intensity=$(tput "$intensity")
   fi
   if [ -z $color ]; then color=$(tput setaf 2); fi
 
