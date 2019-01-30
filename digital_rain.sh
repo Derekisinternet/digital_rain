@@ -7,9 +7,8 @@
 # CONFIG:
 ########
 RAIN_LENGTH=10 # how long the strings get before they fade
-char_count=21  # number of distinct characters to use
 raindrop_indexes=() # keeps track of the state of each column
-chars=($(cat characters)) # list of symbols to display
+CHARS=($(cat characters)) # list of symbols to display
 
 # COLORS
 RESET="\e[22m" #resets color to normal
@@ -30,8 +29,8 @@ height=$(tput lines)
 
 # returns a random character
 generate_char() {
-  i=$((RANDOM%${#chars[@]}))
-  echo ${chars[$i]}
+  i=$((RANDOM%${#CHARS[@]}))
+  echo ${CHARS[$i]}
 }
 
 # draw a character at a specified location
@@ -78,10 +77,11 @@ fade() {
   row=$1
   col=$2
   length=$3
+  new_row=$((row-length))
 
-  if [[ $((col-legth)) -gt 0 ]]; then
-    tput cup $row $column
-    printf ' '
+  if [[ $new_row -ge 0 ]]; then
+    tput cup $new_row $col
+    printf " "
   fi
 }
 
