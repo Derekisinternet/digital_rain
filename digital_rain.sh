@@ -87,24 +87,35 @@ fade() {
 
 # iterate through all the columns that have drops and iterate
 iterate_drops(){
-  # # starting work on iterating drops in random columns
-  # drops=${raindrop_indexes[*]}
-  # while [[ ${#drops} -gt 0 ]]; do
-  #   length=$((${#drips}-1))
-
-  # done
-
-  for i in $( seq 0 $((width-1)) ); do
-    curr_row="${raindrop_indexes[$i]}"
+  # copy indexes
+  drops=( $(seq 0 $((${#raindrop_indexes[*]}-1)) ) )
+  while [[ ${#drops[@]} -gt 0 ]]; do
+    length=$((${#drops[@]}-1))
+    r_index=$((RANDOM%length))
+    
+    curr_row="${raindrop_indexes[$r_index]}"
     if [[ $curr_row -gt 0 ]]; then
+      # if characters writte to bottom of screen:
       if [[ $curr_row -eq $(($height-1)) ]]; then
-        raindrop_indexes[$i]=0
+        raindrop_indexes[$r_index]=0
       else
-        draw_char $curr_row $i
-        fade $curr_row $i $RAIN_LENGTH
+        draw_char $curr_row $r_index
+        fade $curr_row $r_index $RAIN_LENGTH
         new_row=$(($curr_row+1))
-        raindrop_indexes[$i]=$new_row
+        raindrop_indexes[$r_index]=$new_row
       fi
+    fi
+    # remove index from list
+    # if index = 0 then set drops to a sigle slice
+    if [[ $r_index -eq 0 ]]; then
+        tmp=("${drops[@] :1}")
+        drops=$tmp
+        unset tmp
+    else
+        tmp_a=("${drops[@] :0:$((r_index-1)) }")
+        tmp_b=("${drops[@] :$((r_idex+1))}")
+        drops=$tmp_a; drops+=$tmp_b
+        unset tmp_a tmp_b
     fi
   done
 }
