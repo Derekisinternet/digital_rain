@@ -128,9 +128,11 @@ iterate_voids() {
   for i in $(seq 0 $((${#VOID_COORDINATES[@]}-1))); do
     row=${VOID_COORDINATES[$i]}
     if [[ $row -gt 0 ]]; then
+        tput civis
         tput cup $row $i
         printf " "
         VOID_COORDINATES[$i]=$((VOID_COORDINATES[$i]+1))
+        tput cvvis
       if [[ $row -eq $((HEIGHT-1)) ]]; then
         VOID_COORDINATES[$i]=0
       fi
