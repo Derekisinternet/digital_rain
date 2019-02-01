@@ -6,9 +6,14 @@
 ########
 # CONFIG:
 ########
-RAIN_LENGTH=10 # how long the strings get before they fade
-raindrop_coordinates=() # keeps track of the state of each column
+RAIN_LENGTH=15 # how long the strings get before they fade
+RAINDROP_COORDINATES=() # keeps track of the state of each column
+VOID_COORDINATES=()
 CHARS=($(cat characters)) # list of symbols to display
+
+# WINDOW SIZE
+WIDTH=$(tput cols)
+HEIGHT=$(tput lines)
 
 # COLORS
 RESET="\e[22m" #resets color to normal
@@ -18,10 +23,6 @@ green="\e[0;32m"
 bold="\e[1m"
 dim="\e[2m"
 bright="\e[1m"
-# WINDOW SIZE
-width=$(tput cols)
-height=$(tput lines)
-
 
 ###########
 ## METHODS:
@@ -59,14 +60,14 @@ draw_char() {
 
 # finds a column that is not running and starts it
 start_drip() {
-  i=$((RANDOM%width))
+  i=$((RANDOM%WIDTH))
   # find a random column with a zero
-  while [[ "${raindrop_coordinates[$i]}" -ne 0 ]];  do
-    i=$((RANDOM%width))
+  while [[ "${RAINDROP_COORDINATES[$i]}" -ne 0 ]];  do
+    i=$((RANDOM%WIDTH))
   done
   # draw and iterate
   draw_char 0 $i $green $bold
-  raindrop_coordinates[$i]=1
+  RAINDROP_COORDINATES[$i]=1
 }
 
 # make characters behind lead character dimmer
@@ -88,22 +89,23 @@ fade() {
 # iterate through all the columns that have drops and iterate
 iterate_drops(){
   # copy indexes
-  drops=( $(seq 0 $((${#raindrop_coordinates[@]}-1)) ) )
+  drops=( $(seq 0 $((${#RAINDROP_COORDINATES[@]}-1)) ) )
   while [[ ${#drops[@]} -gt 1 ]]; do
     length=${#drops[@]}
     # get a random column index
     r_column=$((RANDOM%length))
     # row coordinate for that column
-    curr_row="${raindrop_coordinates[$r_column]}"
+    curr_row="${RAINDROP_COORDINATES[$r_column]}"
     if [[ $curr_row -gt 0 ]]; then  # row 0 is handled by start_drip()
       # if characters write to bottom of screen:
-      if [[ $curr_row -eq $(($height-1)) ]]; then
-        raindrop_coordinates[$r_column]=0
+      if [[ $curr_row -eq $(($HEIGHT-1)) ]]; then
+        RAINDROP_COORDINATES[$r_column]=0
+        VOID_COORDINATES[$r_column]=$((curr_row-RAIN_LENGTH))
       else
         draw_char $curr_row $r_column
         fade $curr_row $r_column $RAIN_LENGTH
         new_row=$(($curr_row+1))
-        raindrop_coordinates[$r_column]=$new_row
+        RAINDROP_COORDINATES[$r_column]=$new_row
       fi
     fi
     # remove index from list
@@ -121,32 +123,48 @@ iterate_drops(){
   done
 }
 
+# Clean up the screen by erasing columns
+iterate_voids() {
+  for i in $(seq 0 $((${#VOID_COORDINATES[@]}-1))); do
+    row=${VOID_COORDINATES[$i]}
+    if [[ $row -gt 0 ]]; then
+        tput cup $row $i
+        printf " "
+        VOID_COORDINATES[$i]=$((VOID_COORDINATES[$i]+1))
+      if [[ $row -eq $((HEIGHT-1)) ]]; then
+        VOID_COORDINATES[$i]=0
+      fi
+    fi 
+  done
+}
+
 # clean up the terminal on exit
 key_trap() {
-  tput cup $height 0
+  tput cup $HEIGHT 0
   tput sgr0
   exit 0
 }
 
 # set the environment and  whatnot.
 init(){
-  if [ -z $height ]; then return -1; fi
-  if [ -z $width ]; then return -1; fi
+  if [ -z $HEIGHT ]; then return -1; fi
+  if [ -z $WIDTH ]; then return -1; fi
   clear
-  for i in $(seq 0 $((width-1))); do
-    raindrop_coordinates[$i]=0
+  for i in $(seq 0 $((WIDTH-1))); do
+    RAINDROP_COORDINATES[$i]=0
+    VOID_COORDINATES[$i]=0
   done
   trap "key_trap" 2
 }
 
 # the main loop of the script.
 main_loop() {
-  clear # diff btw clear and tput clear?
+  clear
   while : 
   do
     start_drip
     iterate_drops
-    # sleep 0.2
+    iterate_voids
   done
 }
 
@@ -159,4 +177,4 @@ main_loop
 
 # put cursor back in a convenient state and location
 tput sgr0
-tput cup $height 0
+tput cup $HEIGHT 0
