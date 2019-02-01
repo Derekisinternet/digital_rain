@@ -88,15 +88,14 @@ fade() {
 # iterate through all the columns that have drops and iterate
 iterate_drops(){
   # copy indexes
-  drops=( $(seq 0 $((${#raindrop_coordinates[*]}-1)) ) )
+  drops=( $(seq 0 $((${#raindrop_coordinates[@]}-1)) ) )
   while [[ ${#drops[@]} -gt 1 ]]; do
     length=${#drops[@]}
     # get a random column index
     r_column=$((RANDOM%length))
     # row coordinate for that column
     curr_row="${raindrop_coordinates[$r_column]}"
-
-    if [[ $curr_row -gt 0 ]]; then
+    if [[ $curr_row -gt 0 ]]; then  # row 0 is handled by start_drip()
       # if characters write to bottom of screen:
       if [[ $curr_row -eq $(($height-1)) ]]; then
         raindrop_coordinates[$r_column]=0
@@ -114,9 +113,9 @@ iterate_drops(){
         drops=$tmp
         unset tmp
     else
-        tmp_a=("${drops[@] :0:$((r_column-1)) }")
-        tmp_b=("${drops[@] :$((r_idex+1))}")
-        drops=$tmp_a; drops+=$tmp_b
+        tmp_a=("${drops[@] :0:$r_column}")
+        tmp_b=("${drops[@] :$((r_column+1))}")
+        drops=(${tmp_a[@]}); drops+=(${tmp_b[@]})
         unset tmp_a tmp_b
     fi
   done
