@@ -7,7 +7,7 @@
 # CONFIG:
 ########
 RAIN_LENGTH=10 # how long the strings get before they fade
-raindrop_indexes=() # keeps track of the state of each column
+raindrop_coordinates=() # keeps track of the state of each column
 CHARS=($(cat characters)) # list of symbols to display
 
 # COLORS
@@ -61,12 +61,12 @@ draw_char() {
 start_drip() {
   i=$((RANDOM%width))
   # find a random column with a zero
-  while [[ "${raindrop_indexes[$i]}" -ne 0 ]];  do
+  while [[ "${raindrop_coordinates[$i]}" -ne 0 ]];  do
     i=$((RANDOM%width))
   done
   # draw and iterate
   draw_char 0 $i $green $bold
-  raindrop_indexes[$i]=1
+  raindrop_coordinates[$i]=1
 }
 
 # make characters behind lead character dimmer
@@ -88,31 +88,33 @@ fade() {
 # iterate through all the columns that have drops and iterate
 iterate_drops(){
   # copy indexes
-  drops=( $(seq 0 $((${#raindrop_indexes[*]}-1)) ) )
-  while [[ ${#drops[@]} -gt 0 ]]; do
-    length=$((${#drops[@]}-1))
-    r_index=$((RANDOM%length))
-    
-    curr_row="${raindrop_indexes[$r_index]}"
+  drops=( $(seq 0 $((${#raindrop_coordinates[*]}-1)) ) )
+  while [[ ${#drops[@]} -gt 1 ]]; do
+    length=${#drops[@]}
+    # get a random column index
+    r_column=$((RANDOM%length))
+    # row coordinate for that column
+    curr_row="${raindrop_coordinates[$r_column]}"
+
     if [[ $curr_row -gt 0 ]]; then
-      # if characters writte to bottom of screen:
+      # if characters write to bottom of screen:
       if [[ $curr_row -eq $(($height-1)) ]]; then
-        raindrop_indexes[$r_index]=0
+        raindrop_coordinates[$r_column]=0
       else
-        draw_char $curr_row $r_index
-        fade $curr_row $r_index $RAIN_LENGTH
+        draw_char $curr_row $r_column
+        fade $curr_row $r_column $RAIN_LENGTH
         new_row=$(($curr_row+1))
-        raindrop_indexes[$r_index]=$new_row
+        raindrop_coordinates[$r_column]=$new_row
       fi
     fi
     # remove index from list
     # if index = 0 then set drops to a sigle slice
-    if [[ $r_index -eq 0 ]]; then
+    if [[ $r_column -eq 0 ]]; then
         tmp=("${drops[@] :1}")
         drops=$tmp
         unset tmp
     else
-        tmp_a=("${drops[@] :0:$((r_index-1)) }")
+        tmp_a=("${drops[@] :0:$((r_column-1)) }")
         tmp_b=("${drops[@] :$((r_idex+1))}")
         drops=$tmp_a; drops+=$tmp_b
         unset tmp_a tmp_b
@@ -133,7 +135,7 @@ init(){
   if [ -z $width ]; then return -1; fi
   clear
   for i in $(seq 0 $((width-1))); do
-    raindrop_indexes[$i]=0
+    raindrop_coordinates[$i]=0
   done
   trap "key_trap" 2
 }
