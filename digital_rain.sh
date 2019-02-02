@@ -86,13 +86,40 @@ fade() {
   fi
 }
 
-# iterate through all the columns that have drops and iterate
-iterate_drops(){
+# Returns a list with the item at index removed
+# Usage: list=($(remove $list $index))
+# $1 - index
+# $2 - list
+remove() {
+  local i=$1
+  shift 1
+  local list=($@)
+
+  if [[ "$i" -lt "${#list[@]}" ]]; then
+    # if index = 0 then set drops to a sigle slice
+    if [[ $i -eq 0 ]]; then
+      echo "$i = 0"
+      tmp=("${list[@] :1}")
+      list=$tmp
+      unset tmp
+    else
+        echo "i != 0"
+        tmp_a=("${list[@] :0:$i}")
+        echo "tmp_a: ${tmp_a[@]}"
+        tmp_b=("${list[@] :$((i+1))}")
+        echo "tmp_b: ${tmp_b[@]}"
+        list=(${tmp_a[@]}); list+=(${tmp_b[@]})
+        unset tmp_a tmp_b
+    fi
+  fi
+}
+
+# go through all the columns that have drops and iterate
+iterate_drops() {
   # copy indexes
   drops=( $(seq 0 $((${#RAINDROP_COORDINATES[@]}-1)) ) )
   while [[ ${#drops[@]} -gt 1 ]]; do
     length=${#drops[@]}
-    # get a random column index
     r_column=$((RANDOM%length))
     # row coordinate for that column
     curr_row="${RAINDROP_COORDINATES[$r_column]}"
@@ -109,17 +136,7 @@ iterate_drops(){
       fi
     fi
     # remove index from list
-    # if index = 0 then set drops to a sigle slice
-    if [[ $r_column -eq 0 ]]; then
-        tmp=("${drops[@] :1}")
-        drops=$tmp
-        unset tmp
-    else
-        tmp_a=("${drops[@] :0:$r_column}")
-        tmp_b=("${drops[@] :$((r_column+1))}")
-        drops=(${tmp_a[@]}); drops+=(${tmp_b[@]})
-        unset tmp_a tmp_b
-    fi
+    drops=($(remove $drops $r_column) )
   done
 }
 
@@ -148,7 +165,7 @@ key_trap() {
 }
 
 # set the environment and  whatnot.
-init(){
+init() {
   if [ -z $HEIGHT ]; then return -1; fi
   if [ -z $WIDTH ]; then return -1; fi
   clear

@@ -9,8 +9,36 @@
 #   fi
 # done
 
-x=$1
+remove() {
+  local i=$1
+  shift 1
+  local list=($@)
 
-if [[ "x" -ne "bold" ]]; then 
-  echo "no"
-fi
+  echo "input list: ${list[@]}"
+  echo "input list length: ${#list[@]}"
+  echo "input index: $i"
+
+  if [[ "$i" -lt "${#list[@]}" ]]; then
+    echo "$i less than ${#list[@]}"
+    # if index = 0 then set drops to a sigle slice
+    if [[ $i -eq 0 ]]; then
+      echo "$i = 0"
+      tmp=("${list[@] :1}")
+      list=$tmp
+      unset tmp
+    else
+        echo "i != 0"
+        tmp_a=("${list[@] :0:$i}")
+        echo "tmp_a: ${tmp_a[@]}"
+        tmp_b=("${list[@] :$((i+1))}")
+        echo "tmp_b: ${tmp_b[@]}"
+        list=(${tmp_a[@]}); list+=(${tmp_b[@]})
+        unset tmp_a tmp_b
+    fi
+  fi
+  echo "final list: ${list[@]}"
+}
+
+s=($(seq 0 6))
+echo "s = ${s[@]}"
+remove 4 ${s[@]}
