@@ -98,20 +98,17 @@ remove() {
   if [[ "$i" -lt "${#list[@]}" ]]; then
     # if index = 0 then set drops to a sigle slice
     if [[ $i -eq 0 ]]; then
-      echo "$i = 0"
       tmp=("${list[@] :1}")
       list=$tmp
       unset tmp
     else
-        echo "i != 0"
         tmp_a=("${list[@] :0:$i}")
-        echo "tmp_a: ${tmp_a[@]}"
         tmp_b=("${list[@] :$((i+1))}")
-        echo "tmp_b: ${tmp_b[@]}"
         list=(${tmp_a[@]}); list+=(${tmp_b[@]})
         unset tmp_a tmp_b
     fi
   fi
+  echo ${list[@]}
 }
 
 # go through all the columns that have drops and iterate
