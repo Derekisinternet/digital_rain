@@ -8,31 +8,43 @@
 #      printf "\n";
 #   fi
 # done
+CHARS=($(cat characters))
+RESET="\e[0m" #resets color to normal
+red="\e[0;31m"
+blue="\e[0;34m"
+green="\e[0;32m"
+bold="\e[1m"
+dim="\e[2m"
+bright="\e[1m"
+white_bg="\e[47m"
 
-
-remove() {
-  local i=$1
-  shift 1
-  local list=($@)
-
-  if [[ "$i" -lt "${#list[@]}" ]]; then
-    # if index = 0 then set drops to a sigle slice
-    if [[ $i -eq 0 ]]; then
-      tmp=("${list[@] :1}")
-      list=$tmp
-      unset tmp
-    else
-        tmp_a=("${list[@] :0:$i}")
-        tmp_b=("${list[@] :$((i+1))}")
-        list=(${tmp_a[@]}); list+=(${tmp_b[@]})
-        unset tmp_a tmp_b
-    fi
-  fi
-  echo ${list[@]}
+generate_char() {
+  i=$((RANDOM%${#CHARS[@]}))
+  echo ${CHARS[$i]}
 }
 
-s=($(seq 0 9))
-echo "s[@]: ${s[@]}"
-echo 'removing [1]'
-d=$(remove 1 ${s[@]})
-echo "result: ${d[@]}"
+draw_char() {
+  r=$1
+  c=$2
+  color=$3
+  intensity=$4
+  background=$5
+  if [ -z $r ]; then r=0; fi
+  if [ -z $c ]; then c=0; fi
+  if [ -z $color ]; then color=$green; fi
+  if [ -z $background ]; then 
+    background=$black_bg
+  fi
+
+  tput cup $r $c
+  char=$(generate_char)
+  printf "$color$intensity$background$char$RESET"
+}
+
+clear
+# draw a blank cursor
+printf "$red$bright hello $RESET"
+tput cup 1 0 
+printf "$red hello $RESET"
+draw_char 2 0 $red $bold $white_bg
+echo

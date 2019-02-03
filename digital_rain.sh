@@ -17,13 +17,14 @@ VOID_COORDINATES=()
 CHARS=($(cat characters)) # list of symbols to display
 
 # COLORS
-RESET="\e[22m" #resets color to normal
+RESET="\e[0m" #resets color to normal
 red="\e[0;31m"
 blue="\e[0;34m"
 green="\e[0;32m"
 bold="\e[1m"
 dim="\e[2m"
-bright="\e[1m"
+white_bg="\e[47m"
+black_bg="\e[40m"
 
 ###########
 ## METHODS:
@@ -45,18 +46,17 @@ draw_char() {
   c=$2
   color=$3
   intensity=$4
+  background=$5
   if [ -z $r ]; then r=0; fi
   if [ -z $c ]; then c=0; fi
-  if [[ "$itensity" != "bold" && "$intensity" != "dim" ]]; then 
-    intensity=$(tput sgr0)
-  else
-    intensity=$(tput "$intensity")
+  if [ -z $color ]; then color=$green; fi
+  if [ -z $background ]; then 
+    background=$black_bg
   fi
-  if [ -z $color ]; then color=$(tput setaf 2); fi
 
   tput cup $r $c
   char=$(generate_char)
-  printf "$intensity$color$char$RESET"
+  printf "$color$intensity$background$char$RESET"
 }
 
 # finds a column that is not running and starts it
@@ -67,7 +67,7 @@ start_drip() {
     i=$((RANDOM%WIDTH))
   done
   # draw and iterate
-  draw_char 0 $i $green $bold
+  draw_char 0 $i $green $bold $white_bg
   RAINDROP_COORDINATES[$i]=1
 }
 
@@ -125,12 +125,14 @@ iterate_drops() {
     # row coordinate for that column
     curr_row="${RAINDROP_COORDINATES[$r_column]}"
     if [[ $curr_row -gt 0 ]]; then  # row 0 is handled by start_drip()
+      draw_char $((curr_row-1)) $r_column $green $bold
       # if characters write to bottom of screen:
       if [[ $curr_row -eq $(($HEIGHT-1)) ]]; then
+        draw_char $curr_row $r_column $green $bold
         RAINDROP_COORDINATES[$r_column]=0
         VOID_COORDINATES[$r_column]=$((curr_row-RAIN_LENGTH))
       else
-        draw_char $curr_row $r_column
+        draw_char $curr_row $r_column $green $bold $white_bg
         fade $curr_row $r_column $RAIN_LENGTH
         new_row=$(($curr_row+1))
         RAINDROP_COORDINATES[$r_column]=$new_row
@@ -146,7 +148,11 @@ iterate_voids() {
   for i in $(seq 0 $((${#VOID_COORDINATES[@]}-1))); do
     row=${VOID_COORDINATES[$i]}
     if [[ $row -gt 0 ]]; then
-        tput civis
+      tput civis
+      if [ $row -eq 1 ]; then
+        tput cup $((row-1)) $i
+        ptrintf " "
+      fi
         tput cup $row $i
         printf " "
         VOID_COORDINATES[$i]=$((VOID_COORDINATES[$i]+1))
