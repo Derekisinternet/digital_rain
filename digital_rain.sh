@@ -128,12 +128,23 @@ iterate_drops() {
       draw_char $((curr_row-1)) $r_column $green $bold
       # if characters write to bottom of screen:
       if [[ $curr_row -eq $(($HEIGHT-1)) ]]; then
-        draw_char $curr_row $r_column $green $bold
-        RAINDROP_COORDINATES[$r_column]=0
-        VOID_COORDINATES[$r_column]=$((curr_row-RAIN_LENGTH))
+        if [[ VOID_COORDINATES[$r_index] -gt 0 ]]; then
+          if [[ VOID_COORDINATES[$r_index] -gt 10 ]]; then
+            RAINDROP_COORDINATES[$r_column]=0
+          fi
+        else
+          draw_char $curr_row $r_column $green $bold
+          VOID_COORDINATES[$r_index]=1
+        fi
+        
+        # if the column has cleaned up a bit:
+
+        
+        # VOID_COORDINATES[$r_column]=$((curr_row-RAIN_LENGTH))
+        # 
       else
         draw_char $curr_row $r_column $green $bold $white_bg
-        fade $curr_row $r_column $RAIN_LENGTH
+        # fade $curr_row $r_column $RAIN_LENGTH
         new_row=$(($curr_row+1))
         RAINDROP_COORDINATES[$r_column]=$new_row
       fi
@@ -151,7 +162,7 @@ iterate_voids() {
       tput civis
       if [ $row -eq 1 ]; then
         tput cup $((row-1)) $i
-        ptrintf " "
+        printf " "
       fi
         tput cup $row $i
         printf " "
@@ -190,7 +201,7 @@ main_loop() {
   do
     start_drip
     iterate_drops
-    # iterate_voids
+    iterate_voids
   done
 }
 
