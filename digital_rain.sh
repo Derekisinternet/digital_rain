@@ -113,11 +113,14 @@ remove() {
 
 # go through all the columns that have drops and iterate
 iterate_drops() {
-  # copy indexes
-  drops=( $(seq 0 $((${#RAINDROP_COORDINATES[@]}-1)) ) )
-  while [[ ${#drops[@]} -gt 1 ]]; do
-    length=${#drops[@]}
-    r_column=$((RANDOM%length))
+  # copy indexes into a list.
+  drop_indexes=( $( seq 0 $((${#RAINDROP_COORDINATES[@]}-1)) ) )
+  while [[ ${#drop_indexes[@]} -gt 1 ]]; do
+    # get a random drop from RAINDROP_INDEXES by taking a random index from drop_indexes
+    # this will make more sense when we start removing items from drop_indexes
+    length=${#drop_indexes[@]}
+    r_index=$((RANDOM%length))
+    r_column=${drop_indexes[$r_index]}
     # row coordinate for that column
     curr_row="${RAINDROP_COORDINATES[$r_column]}"
     if [[ $curr_row -gt 0 ]]; then  # row 0 is handled by start_drip()
@@ -132,8 +135,8 @@ iterate_drops() {
         RAINDROP_COORDINATES[$r_column]=$new_row
       fi
     fi
-    # remove index from list
-    drops=($(remove $drops $r_column) )
+    # remove iterated drop from drop_indexes, so that we get another random column instead of iterating again
+    drop_indexes=($(remove $r_index ${drop_indexes[@]}) )
   done
 }
 

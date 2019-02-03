@@ -9,6 +9,7 @@
 #   fi
 # done
 
+
 remove() {
   local i=$1
   shift 1
@@ -30,8 +31,8 @@ remove() {
   echo ${list[@]}
 }
 
-s=($(seq 0 6))
-echo "s = ${s[@]}"
-s=($(remove 4 ${s[@]}))
-echo "s = ${s[@]}"
-echo "s length: ${#s[@]}"
+s=($(seq 0 9))
+echo "s[@]: ${s[@]}"
+echo 'removing [1]'
+d=$(remove 1 ${s[@]})
+echo "result: ${d[@]}"
