@@ -6,14 +6,15 @@
 ########
 # CONFIG:
 ########
-RAIN_LENGTH=15 # how long the strings get before they fade
-RAINDROP_COORDINATES=() # keeps track of the state of each column
-VOID_COORDINATES=()
-CHARS=($(cat characters)) # list of symbols to display
 
 # WINDOW SIZE
 WIDTH=$(tput cols)
 HEIGHT=$(tput lines)
+
+RAIN_LENGTH=$(( (HEIGHT*3)/4 )) # how long the strings get before they fade
+RAINDROP_COORDINATES=() # keeps track of the state of each column
+VOID_COORDINATES=()
+CHARS=($(cat characters)) # list of symbols to display
 
 # COLORS
 RESET="\e[22m" #resets color to normal
@@ -183,7 +184,7 @@ main_loop() {
   do
     start_drip
     iterate_drops
-    iterate_voids
+    # iterate_voids
   done
 }
 
