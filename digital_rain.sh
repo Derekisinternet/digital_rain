@@ -71,22 +71,6 @@ start_drip() {
   RAINDROP_COORDINATES[$i]=1
 }
 
-# make characters behind lead character dimmer
-# $1 - row
-# $2 - column
-# $3 - length of the fade
-fade() {
-  row=$1
-  col=$2
-  length=$3
-  new_row=$((row-length))
-
-  if [[ $new_row -ge 0 ]]; then
-    tput cup $new_row $col
-    printf " "
-  fi
-}
-
 # Returns a list with the item at index removed
 # Usage: list=($(remove $list $index))
 # $1 - index
@@ -136,15 +120,8 @@ iterate_drops() {
           draw_char $curr_row $r_column $green $bold
           VOID_COORDINATES[$r_index]=1
         fi
-        
-        # if the column has cleaned up a bit:
-
-        
-        # VOID_COORDINATES[$r_column]=$((curr_row-RAIN_LENGTH))
-        # 
       else
         draw_char $curr_row $r_column $green $bold $white_bg
-        # fade $curr_row $r_column $RAIN_LENGTH
         new_row=$(($curr_row+1))
         RAINDROP_COORDINATES[$r_column]=$new_row
       fi
@@ -156,23 +133,23 @@ iterate_drops() {
 
 # Clean up the screen by erasing columns
 iterate_voids() {
+  tput civis
   for i in $(seq 0 $((${#VOID_COORDINATES[@]}-1))); do
     row=${VOID_COORDINATES[$i]}
     if [[ $row -gt 0 ]]; then
-      tput civis
       if [ $row -eq 1 ]; then
         tput cup $((row-1)) $i
         printf " "
       fi
-        tput cup $row $i
-        printf " "
-        VOID_COORDINATES[$i]=$((VOID_COORDINATES[$i]+1))
-        tput cvvis
+      tput cup $row $i
+      printf " "
+      VOID_COORDINATES[$i]=$((VOID_COORDINATES[$i]+1))
       if [[ $row -eq $((HEIGHT-1)) ]]; then
         VOID_COORDINATES[$i]=0
       fi
     fi 
   done
+  tput cvvis
 }
 
 # clean up the terminal on exit
